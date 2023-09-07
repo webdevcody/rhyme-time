@@ -28,14 +28,14 @@ export default function App() {
   const convex = new ConvexReactClient(data.ENV.CONVEX_URL as string);
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="dark:bg-gray-900 dark:text-white">
         <ConvexProvider client={convex}>
           <Outlet />
         </ConvexProvider>

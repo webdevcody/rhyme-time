@@ -1,38 +1,44 @@
 "use node";
 
 import { v } from "convex/values";
-import { internalAction } from "../_generated/server";
+import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import Jimp from "jimp";
 
-async function generateImageUsingDalle({ prompt }: { prompt: string }) {
-  const imageFetchResponse = await fetch(
-    `https://api.openai.com/v1/images/generations`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        prompt: prompt + ", 8 bit, game art, contained inside canvas",
-        n: 1,
-        size: "1024x1024",
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_KEY}`,
-      },
-    }
-  );
+function generateDalleImage(prompt: string) {
+  return fetch(`https://api.openai.com/v1/images/generations`, {
+    method: "POST",
+    body: JSON.stringify({
+      prompt: prompt + ", 8 bit, game art, contained inside canvas",
+      n: 1,
+      size: "1024x1024",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_KEY}`,
+    },
+  }).then((response) => response.json());
+}
 
-  const imageResponse = await imageFetchResponse.json();
+async function generateImageUsingDalle({ prompt }: { prompt: string }) {
+  const imageResponse = await generateDalleImage(prompt);
   const imageUrl = imageResponse.data[0].url;
   const imageData = await fetch(imageUrl);
   return await imageData.arrayBuffer();
 }
 
-export const createImage = internalAction({
+export const createImage = action({
   args: {
     prompt: v.string(),
   },
   async handler(ctx, args) {
+    const _id = await ctx.runMutation(
+      internal.images.mutations.createInitialImage,
+      {
+        prompt: args.prompt,
+      }
+    );
+
     const dalleImage = await generateImageUsingDalle({ prompt: args.prompt });
 
     const image = await Jimp.read(Buffer.from(dalleImage));
@@ -116,11 +122,11 @@ export const createImage = internalAction({
       throw new Error("image was not saved correctly into convex file storage");
     }
 
-    await ctx.runMutation(internal.images.mutations.saveImage, {
+    await ctx.runMutation(internal.images.mutations.updateImage, {
+      _id,
       bins: bins.map((bin) => bin.map((b) => b.hex)),
       imageId,
       imageUrl,
-      prompt: args.prompt,
     });
   },
 });
