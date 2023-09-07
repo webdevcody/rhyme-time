@@ -1,4 +1,6 @@
 import type { V2_MetaFunction } from "@remix-run/node";
+import { api } from "convex/_generated/api";
+import { useQuery } from "convex/react";
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -8,34 +10,17 @@ export const meta: V2_MetaFunction = () => {
 };
 
 export default function Index() {
+  const images = useQuery(api.images.queries.getImages);
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
-    </div>
+    <>
+      <h1 className="text-3xl font-bold underline">HI</h1>
+
+      {images?.map((image) => {
+        return (
+          <img key={image.imageUrl} src={image.imageUrl} className="w-1/3" />
+        );
+      })}
+    </>
   );
 }
