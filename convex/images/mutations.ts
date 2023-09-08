@@ -24,7 +24,6 @@ export const updateImage = internalMutation({
       bins: args.bins,
       imageId: args.imageId,
       imageUrl: args.imageUrl,
-      board: args.bins.map((bin) => bin.map(() => null)),
     });
   },
 });

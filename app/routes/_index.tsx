@@ -1,6 +1,7 @@
 import type { V2_MetaFunction } from "@remix-run/node";
+import { useNavigate } from "@remix-run/react";
 import { api } from "convex/_generated/api";
-import { useAction, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useForm } from "react-hook-form";
 import { Spinner } from "~/components/spinner";
 
@@ -21,6 +22,8 @@ export default function Index() {
 
   const images = useQuery(api.images.queries.getImages);
   const createImage = useAction(api.images.actions.createImage);
+  const createRoom = useMutation(api.rooms.mutations.createRoom);
+  const navigate = useNavigate();
 
   return (
     <div className="container mx-auto">
@@ -57,13 +60,26 @@ export default function Index() {
       <div className="grid grid-cols-4 gap-12">
         {images?.map((image) => {
           return image.imageUrl ? (
-            <img
-              key={image.imageUrl}
-              src={image.imageUrl}
-              className="w-100 rounded-xl"
-            />
+            <button
+              key={image._id}
+              onClick={async () => {
+                const roomId = await createRoom({
+                  imageId: image._id,
+                });
+                navigate(`/rooms/${roomId}`);
+              }}
+            >
+              <img
+                alt={image.prompt}
+                src={image.imageUrl}
+                className="w-100 rounded-xl hover:scale-110"
+              />
+            </button>
           ) : (
-            <div className="w-100 h-full flex justify-center items-center">
+            <div
+              key={image._id}
+              className="w-100 h-full flex justify-center items-center"
+            >
               <Spinner />
             </div>
           );

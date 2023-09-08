@@ -9,7 +9,7 @@ function generateDalleImage(prompt: string) {
   return fetch(`https://api.openai.com/v1/images/generations`, {
     method: "POST",
     body: JSON.stringify({
-      prompt: prompt + ", 8 bit, game art, contained inside canvas",
+      prompt: prompt + ", 8 bit, game art, contained inside canvas, centered",
       n: 1,
       size: "1024x1024",
     }),

@@ -17,6 +17,8 @@ import type {
 import type * as images_actions from "../images/actions";
 import type * as images_mutations from "../images/mutations";
 import type * as images_queries from "../images/queries";
+import type * as rooms_mutations from "../rooms/mutations";
+import type * as rooms_queries from "../rooms/queries";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,6 +32,8 @@ declare const fullApi: ApiFromModules<{
   "images/actions": typeof images_actions;
   "images/mutations": typeof images_mutations;
   "images/queries": typeof images_queries;
+  "rooms/mutations": typeof rooms_mutations;
+  "rooms/queries": typeof rooms_queries;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
