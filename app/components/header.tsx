@@ -8,9 +8,16 @@ export function Header() {
       <div className="flex justify-between items-center container mx-auto p-4">
         <div>LOGO</div>
 
-        <div className="flex gap-4">
-          <Link to={"/"}>IMAGES</Link>
-          <Link to={"/rooms"}>YOUR ROOMS</Link>
+        <div className="flex gap-8">
+          <Link className="hover:text-blue-300" to={"/"}>
+            Browse
+          </Link>
+          <Link className="hover:text-blue-300" to={"/rooms"}>
+            Create a Canvas
+          </Link>
+          <Link className="hover:text-blue-300" to={"/rooms"}>
+            Collection
+          </Link>
         </div>
 
         <div>
