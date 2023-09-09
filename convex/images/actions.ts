@@ -5,6 +5,9 @@ import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import Jimp from "jimp";
 
+const IMAGE_RESOLUTION = 1024;
+const BINS = 64;
+
 function generateDalleImage(prompt: string) {
   return fetch(`https://api.openai.com/v1/images/generations`, {
     method: "POST",
@@ -43,12 +46,10 @@ export const createImage = action({
 
     const image = await Jimp.read(Buffer.from(dalleImage));
 
-    function rgbToHex(rgbArray: [Number, Number, Number]) {
-      const [r, g, b] = rgbArray;
-      const rHex = r.toString(16).padStart(2, "0");
-      const gHex = g.toString(16).padStart(2, "0");
-      const bHex = b.toString(16).padStart(2, "0");
-      return `#${rHex}${gHex}${bHex}`;
+    function rgbToHex(rgbArray: [number, number, number]) {
+      const toHex = (channel: number) =>
+        (channel & 0xff).toString(16).padStart(2, "0");
+      return `#${rgbArray.map(toHex).join("")}`;
     }
 
     function getMostCommonColor(
@@ -78,22 +79,22 @@ export const createImage = action({
     }
 
     // Divide the image into 42x42 bins and calculate the most common color for each bin
-    const binSize = 1024 / 42;
+    const binSize = IMAGE_RESOLUTION / BINS;
     const bins = [];
 
-    for (let x = 0; x < 1024; x += binSize) {
+    for (let x = 0; x < IMAGE_RESOLUTION; x += binSize) {
       const row = [];
-      for (let y = 0; y < 1024; y += binSize) {
+      for (let y = 0; y < IMAGE_RESOLUTION; y += binSize) {
         const mostCommonColor = getMostCommonColor(x, y, binSize, binSize);
         row.push(mostCommonColor);
       }
       bins.push(row);
     }
 
-    const resultImage = new Jimp(1024, 1024);
+    const resultImage = new Jimp(IMAGE_RESOLUTION, IMAGE_RESOLUTION);
 
-    for (let x = 0; x < 42; x++) {
-      for (let y = 0; y < 42; y++) {
+    for (let x = 0; x < BINS; x++) {
+      for (let y = 0; y < BINS; y++) {
         const color = bins[x][y];
         const [r, g, b] = color.rgb;
 

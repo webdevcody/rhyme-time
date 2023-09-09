@@ -9,6 +9,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^4.24.2",
     "@remix-run/css-bundle": "^1.19.3",
     "@remix-run/node": "^1.19.3",
     "@remix-run/react": "^1.19.3",
@@ -16,6 +17,7 @@
     "convex": "^1.2.1",
     "isbot": "^3.6.8",
     "jimp": "^0.22.10",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.46.1"
@@ -23,6 +25,7 @@
   "devDependencies": {
     "@remix-run/dev": "^1.19.3",
     "@remix-run/eslint-config": "^1.19.3",
+    "@types/lodash": "^4.14.198",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "eslint": "^8.38.0",

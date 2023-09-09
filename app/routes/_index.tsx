@@ -27,7 +27,7 @@ export default function Index() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-4xl font-bold mb-4 mt-8">Generate an Image</h1>
+      <h1 className="text-4xl font-bold mb-4">Generate an Image</h1>
 
       <form
         onSubmit={handleSubmit(async (formData) => {

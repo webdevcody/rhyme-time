@@ -6,6 +6,12 @@ export const createRoom = mutation({
     imageId: v.id("images"),
   },
   async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("must be logged in to create a room");
+    }
+
     const image = await ctx.db.get(args.imageId);
 
     if (!image) return;
@@ -13,6 +19,7 @@ export const createRoom = mutation({
 
     return await ctx.db.insert("rooms", {
       imageId: args.imageId,
+      userId: identity.subject,
       board: image.bins.map((bin) => bin.map(() => false)),
     });
   },
