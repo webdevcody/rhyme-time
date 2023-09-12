@@ -1,4 +1,4 @@
-import { SignInButton, SignOutButton } from "@clerk/clerk-react";
+import { SignOutButton, SignInButton } from "@clerk/remix";
 import { Link } from "@remix-run/react";
 import { Authenticated, Unauthenticated } from "convex/react";
 
@@ -12,8 +12,8 @@ export function Header() {
           <Link className="hover:text-blue-300" to={"/"}>
             Browse
           </Link>
-          <Link className="hover:text-blue-300" to={"/rooms"}>
-            Create a Canvas
+          <Link className="hover:text-blue-300" to={"/generate"}>
+            Generate
           </Link>
           <Link className="hover:text-blue-300" to={"/rooms"}>
             Collection

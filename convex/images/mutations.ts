@@ -1,14 +1,22 @@
 import { v } from "convex/values";
-import { internalMutation } from "../_generated/server";
+import { internalMutation, mutation } from "../_generated/server";
+import { api } from "convex/_generated/api";
 
-export const createInitialImage = internalMutation({
+export const createInitialImage = mutation({
   args: {
     prompt: v.string(),
   },
   async handler(ctx, args) {
-    return await ctx.db.insert("images", {
+    const imageId = await ctx.db.insert("images", {
       prompt: args.prompt,
     });
+
+    await ctx.scheduler.runAfter(0, api.images.actions.createImage, {
+      imageId,
+      prompt: args.prompt,
+    });
+
+    return imageId;
   },
 });
 

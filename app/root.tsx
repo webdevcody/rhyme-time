@@ -1,4 +1,8 @@
-import { type LinksFunction, json } from "@remix-run/node";
+import type {
+  DataFunctionArgs,
+  LinksFunction,
+  LoaderFunction,
+} from "@remix-run/node";
 import stylesheet from "~/tailwind.css";
 import {
   Links,
@@ -9,36 +13,37 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import { rootAuthLoader } from "@clerk/remix/ssr.server";
 import {
-  Authenticated,
-  ConvexReactClient,
-  Unauthenticated,
-} from "convex/react";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignOutButton,
+  ClerkApp,
+  ClerkCatchBoundary,
+  V2_ClerkErrorBoundary,
   useAuth,
-} from "@clerk/clerk-react";
+} from "@clerk/remix";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexReactClient } from "convex/react";
 import { Header } from "./components/header";
+import { useMemo } from "react";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
 ];
 
-export async function loader() {
-  return json({
+export const loader: LoaderFunction = (args: DataFunctionArgs) => {
+  return rootAuthLoader(args, () => ({
     ENV: {
       CONVEX_URL: process.env.CONVEX_URL,
       CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
     },
-  });
-}
+  }));
+};
 
-export default function App() {
+function App() {
   const data = useLoaderData<typeof loader>();
-  const convex = new ConvexReactClient(data.ENV.CONVEX_URL!);
+  const convex = useMemo(
+    () => new ConvexReactClient(data.ENV.CONVEX_URL),
+    [data.ENV.CONVEX_URL]
+  );
 
   return (
     <html lang="en" className="dark">
@@ -49,14 +54,12 @@ export default function App() {
         <Links />
       </head>
       <body className="dark:bg-gray-900 dark:text-white">
-        <ClerkProvider publishableKey={data.ENV.CLERK_PUBLISHABLE_KEY!}>
-          <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-            <Header />
-            <div className="pt-8">
-              <Outlet />
-            </div>
-          </ConvexProviderWithClerk>
-        </ClerkProvider>
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          <Header />
+          <div className="pt-8 pb-8 container mx-auto">
+            <Outlet />
+          </div>
+        </ConvexProviderWithClerk>
 
         <ScrollRestoration />
         <Scripts />
@@ -65,3 +68,8 @@ export default function App() {
     </html>
   );
 }
+
+export default ClerkApp(App);
+
+export const ErrorBoundary = V2_ClerkErrorBoundary();
+export const CatchBoundary = ClerkCatchBoundary();

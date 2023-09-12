@@ -8,6 +8,54 @@ import Jimp from "jimp";
 const IMAGE_RESOLUTION = 1024;
 const BINS = 64;
 
+type ColorInfo = {
+  hex: string;
+  rgb: [number, number, number];
+};
+
+function generateAll8BitColors() {
+  const hexColors = [] as ColorInfo[];
+
+  // Iterate through all possible combinations of R, G, and B values (0 to 255)
+  for (let r = 0; r <= 255; r += 51) {
+    // Increment by 51 to get 6 levels of red
+    for (let g = 0; g <= 255; g += 51) {
+      // Increment by 51 to get 6 levels of green
+      for (let b = 0; b <= 255; b += 51) {
+        // Increment by 51 to get 6 levels of blue
+        // Convert decimal values to 2-digit hexadecimal values
+        const hexR = r.toString(16).padStart(2, "0");
+        const hexG = g.toString(16).padStart(2, "0");
+        const hexB = b.toString(16).padStart(2, "0");
+
+        // Create a hex color in the format "#RRGGBB"
+        const hexColor = `#${hexR}${hexG}${hexB}`;
+
+        hexColors.push({
+          rgb: [parseInt(hexR, 16), parseInt(hexG, 16), parseInt(hexB, 16)],
+          hex: hexColor,
+        });
+      }
+    }
+  }
+
+  return hexColors;
+}
+
+// Helper function to calculate the Euclidean distance between two RGB colors
+function colorDistance(
+  color1: [number, number, number],
+  color2: [number, number, number]
+): number {
+  const r1 = color1[0];
+  const g1 = color1[1];
+  const b1 = color1[2];
+  const r2 = color2[0];
+  const g2 = color2[1];
+  const b2 = color2[2];
+  return Math.sqrt((r2 - r1) ** 2 + (g2 - g1) ** 2 + (b2 - b1) ** 2);
+}
+
 function generateDalleImage(prompt: string) {
   return fetch(`https://api.openai.com/v1/images/generations`, {
     method: "POST",
@@ -23,6 +71,25 @@ function generateDalleImage(prompt: string) {
   }).then((response) => response.json());
 }
 
+function findClosestColor(
+  targetRgb: [number, number, number],
+  colors: Set<ColorInfo>
+): ColorInfo {
+  let closestColor: ColorInfo | null = null;
+  let closestDistance = Number.MAX_VALUE;
+
+  for (const color of colors) {
+    const numberColors = color.rgb;
+    const distance = colorDistance(targetRgb, numberColors);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestColor = color;
+    }
+  }
+
+  return closestColor!;
+}
+
 async function generateImageUsingDalle({ prompt }: { prompt: string }) {
   const imageResponse = await generateDalleImage(prompt);
   const imageUrl = imageResponse.data[0].url;
@@ -33,15 +100,9 @@ async function generateImageUsingDalle({ prompt }: { prompt: string }) {
 export const createImage = action({
   args: {
     prompt: v.string(),
+    imageId: v.id("images"),
   },
   async handler(ctx, args) {
-    const _id = await ctx.runMutation(
-      internal.images.mutations.createInitialImage,
-      {
-        prompt: args.prompt,
-      }
-    );
-
     const dalleImage = await generateImageUsingDalle({ prompt: args.prompt });
 
     const image = await Jimp.read(Buffer.from(dalleImage));
@@ -57,7 +118,7 @@ export const createImage = action({
       y: number,
       width: number,
       height: number
-    ) {
+    ): ColorInfo {
       const colorMap = new Map();
 
       for (let i = x; i < x + width; i++) {
@@ -73,19 +134,24 @@ export const createImage = action({
         [null, 0]
       );
 
-      const rgb = mostCommonColor[0].split(",").map(Number);
+      const rgb = mostCommonColor[0].split(",");
 
       return { hex: rgbToHex(rgb), rgb };
     }
 
-    // Divide the image into 42x42 bins and calculate the most common color for each bin
     const binSize = IMAGE_RESOLUTION / BINS;
-    const bins = [];
+    const reducedColors = generateAll8BitColors();
 
+    const bins = [] as ColorInfo[][];
     for (let x = 0; x < IMAGE_RESOLUTION; x += binSize) {
       const row = [];
       for (let y = 0; y < IMAGE_RESOLUTION; y += binSize) {
-        const mostCommonColor = getMostCommonColor(x, y, binSize, binSize);
+        const common = getMostCommonColor(x, y, binSize, binSize);
+        const numberColors = common.rgb;
+        const mostCommonColor = findClosestColor(
+          numberColors,
+          new Set(reducedColors)
+        );
         row.push(mostCommonColor);
       }
       bins.push(row);
@@ -96,6 +162,7 @@ export const createImage = action({
     for (let x = 0; x < BINS; x++) {
       for (let y = 0; y < BINS; y++) {
         const color = bins[x][y];
+        if (!color) continue;
         const [r, g, b] = color.rgb;
 
         for (let i = 0; i < binSize; i++) {
@@ -124,8 +191,12 @@ export const createImage = action({
     }
 
     await ctx.runMutation(internal.images.mutations.updateImage, {
-      _id,
-      bins: bins.map((bin) => bin.map((b) => b.hex)),
+      _id: args.imageId,
+      bins: bins.map((bin) =>
+        bin.map((b) => {
+          return b.hex;
+        })
+      ),
       imageId,
       imageUrl,
     });

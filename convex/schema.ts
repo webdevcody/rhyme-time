@@ -7,6 +7,8 @@ export default defineSchema({
     imageId: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     prompt: v.string(),
+  }).searchIndex("search_prompt", {
+    searchField: "prompt",
   }),
   rooms: defineTable({
     userId: v.string(),

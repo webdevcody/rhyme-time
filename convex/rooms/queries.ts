@@ -15,7 +15,10 @@ export const getUserRooms = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
 
-    const rooms = await ctx.db.query("rooms").withIndex("by_userId").collect();
+    const rooms = await ctx.db
+      .query("rooms")
+      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .collect();
 
     return await Promise.all(
       rooms.map(async (room) => {

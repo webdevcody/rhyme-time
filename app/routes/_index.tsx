@@ -1,9 +1,9 @@
 import type { V2_MetaFunction } from "@remix-run/node";
 import { useNavigate } from "@remix-run/react";
 import { api } from "convex/_generated/api";
-import { useAction, useMutation, useQuery } from "convex/react";
-import { useForm } from "react-hook-form";
+import { useMutation, useQuery } from "convex/react";
 import { Spinner } from "~/components/spinner";
+import { useState } from "react";
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -13,47 +13,32 @@ export const meta: V2_MetaFunction = () => {
 };
 
 export default function Index() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<{ prompt: string }>();
-
-  const images = useQuery(api.images.queries.getImages);
-  const createImage = useAction(api.images.actions.createImage);
+  const [search, setSearch] = useState("");
+  const images = useQuery(api.images.queries.getImages, {
+    filter: search,
+  });
   const createRoom = useMutation(api.rooms.mutations.createRoom);
   const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-4xl font-bold mb-4">Generate an Image</h1>
+    <div className="container mx-auto flex flex-col gap-8">
+      <h1 className="text-4xl font-bold">Search for an Image</h1>
 
       <form
-        onSubmit={handleSubmit(async (formData) => {
-          await createImage({
-            prompt: formData.prompt,
-          });
-          reset();
-        })}
-        className="flex flex-col justify-start mb-8"
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          setSearch((formData.get("filter") as string) ?? "");
+        }}
       >
         <input
-          placeholder="enter a prompt"
-          className="mb-1 w-1/3 p-2 rounded-md text-black"
-          {...register("prompt", { required: true })}
-        />
-        {errors.prompt && (
-          <span className="text-red-400">This field is required</span>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex gap-1 items-center disabled:bg-gray-400 disabled:hover:bg-gray-400 mt-4 self-start bg-blue-400 hover:bg-blue-500 rounded-md px-2 py-1"
-        >
-          {isSubmitting && <Spinner />}
-          Generate Image
+          placeholder="space ship, dog, cat, food, etc."
+          name="filter"
+          className="text-black rounded px-2 py-2 text-lg self-end w-[300px]"
+        ></input>
+        <button className="disabled:bg-gray-400 disabled:hover:bg-gray-400 mt-4 bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-2 text-xl">
+          Search
         </button>
       </form>
 
