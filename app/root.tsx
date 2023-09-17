@@ -13,16 +13,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
-import { rootAuthLoader } from "@clerk/remix/ssr.server";
-import {
-  ClerkApp,
-  ClerkCatchBoundary,
-  V2_ClerkErrorBoundary,
-  useAuth,
-} from "@clerk/remix";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { ConvexReactClient } from "convex/react";
-import { Header } from "./components/header";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { useMemo } from "react";
 
 export const links: LinksFunction = () => [
@@ -30,15 +21,14 @@ export const links: LinksFunction = () => [
 ];
 
 export const loader: LoaderFunction = (args: DataFunctionArgs) => {
-  return rootAuthLoader(args, () => ({
+  return {
     ENV: {
       CONVEX_URL: process.env.CONVEX_URL,
-      CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
     },
-  }));
+  };
 };
 
-function App() {
+export default function App() {
   const data = useLoaderData<typeof loader>();
   const convex = useMemo(
     () => new ConvexReactClient(data.ENV.CONVEX_URL),
@@ -54,12 +44,11 @@ function App() {
         <Links />
       </head>
       <body className="dark:bg-gray-900 dark:text-white">
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <Header />
+        <ConvexProvider client={convex}>
           <div className="pt-8 pb-8 container mx-auto">
             <Outlet />
           </div>
-        </ConvexProviderWithClerk>
+        </ConvexProvider>
 
         <ScrollRestoration />
         <Scripts />
@@ -68,8 +57,3 @@ function App() {
     </html>
   );
 }
-
-export default ClerkApp(App);
-
-export const ErrorBoundary = V2_ClerkErrorBoundary();
-export const CatchBoundary = ClerkCatchBoundary();

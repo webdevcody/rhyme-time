@@ -1,0 +1,3 @@
+- generate set of rhyme words
+- generate 3 images
+- use text synth for playing word
