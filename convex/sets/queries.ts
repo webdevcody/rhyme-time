@@ -19,11 +19,19 @@ export const getSet = query({
       return image?.imageUrl;
     }
 
-    const imageMap = {} as Record<string, string | null>;
-    if (!set.words) {
-      return { ...set, imageMap };
+    async function getVoiceUrl(word: string) {
+      const image = await ctx.db
+        .query("voices")
+        .withIndex("by_word", (q) => q.eq("word", word))
+        .first();
+      return image?.voiceUrl;
     }
 
+    const imageMap = {} as Record<string, string | null>;
+    const voiceMap = {} as Record<string, string | null>;
+    if (!set.words) {
+      return { ...set, imageMap, voiceMap };
+    }
     const imageUrls = await Promise.all(
       set.words.map((word) => getImageUrl(word))
     );
@@ -31,9 +39,17 @@ export const getSet = query({
       imageMap[word] = imageUrls[idx] ?? null;
     });
 
+    const voiceUrls = await Promise.all(
+      set.words.map((word) => getVoiceUrl(word))
+    );
+    set.words.forEach((word, idx) => {
+      voiceMap[word] = voiceUrls[idx] ?? null;
+    });
+
     return {
       ...set,
       imageMap,
+      voiceMap,
     };
   },
 });

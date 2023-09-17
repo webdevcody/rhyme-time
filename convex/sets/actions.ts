@@ -64,6 +64,10 @@ export const generateRhymeSet = internalAction({
       })
     );
 
+    await ctx.scheduler.runAfter(0, internal.voices.actions.generateVoices, {
+      words: info.words,
+    });
+
     await ctx.runMutation(internal.sets.mutations.updateSet, {
       setId: args.setId,
       words: info.words,

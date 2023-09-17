@@ -1,5 +1,5 @@
 import type { V2_MetaFunction } from "@remix-run/node";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { Spinner } from "~/components/spinner";
 import { useEffect, useState } from "react";
 import type { Id } from "convex/_generated/dataModel";
@@ -13,17 +13,11 @@ export const meta: V2_MetaFunction = () => {
   ];
 };
 
-function playWord(text: string) {
-  let utterance = new SpeechSynthesisUtterance();
-  utterance.text = text;
-  utterance.voice = window.speechSynthesis.getVoices()[0];
-  window.speechSynthesis.speak(utterance);
-}
-
 export default function Index() {
   const [setId, setSetId] = useState<Id<"sets">>();
   const createSet = useMutation(api.sets.mutations.createRhymeSet);
   const set = useQuery(api.sets.queries.getSet, setId ? { setId } : "skip");
+
   function newRound() {
     setSetId(undefined);
     createSet().then(setSetId);
@@ -52,7 +46,12 @@ export default function Index() {
                 <h2 className="self-center text-5xl">{word}</h2>
                 <button
                   className="self-center bg-gray-500 hover:bg-gray-600 rounded px-2 py-1"
-                  onClick={() => playWord(word)}
+                  onClick={async () => {
+                    const voiceUrl = set.voiceMap[word];
+                    if (!voiceUrl) return;
+                    const audio = new Audio(voiceUrl);
+                    audio.play();
+                  }}
                 >
                   <SpeakerIcon />
                 </button>

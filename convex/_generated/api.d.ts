@@ -20,6 +20,8 @@ import type * as images_queries from "../images/queries";
 import type * as sets_actions from "../sets/actions";
 import type * as sets_mutations from "../sets/mutations";
 import type * as sets_queries from "../sets/queries";
+import type * as voices_actions from "../voices/actions";
+import type * as voices_mutations from "../voices/mutations";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -36,6 +38,8 @@ declare const fullApi: ApiFromModules<{
   "sets/actions": typeof sets_actions;
   "sets/mutations": typeof sets_mutations;
   "sets/queries": typeof sets_queries;
+  "voices/actions": typeof voices_actions;
+  "voices/mutations": typeof voices_mutations;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

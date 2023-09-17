@@ -10,4 +10,8 @@ export default defineSchema({
     word: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
   }).index("by_word", ["word"]),
+  voices: defineTable({
+    word: v.optional(v.string()),
+    voiceUrl: v.optional(v.string()),
+  }).index("by_word", ["word"]),
 });
