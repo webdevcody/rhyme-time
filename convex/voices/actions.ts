@@ -2,6 +2,8 @@ import { internal } from "convex/_generated/api";
 import { internalAction } from "convex/_generated/server";
 import { v } from "convex/values";
 
+const VOICE_ID = "LuvlT2UPR7fItzQjsyJO";
+
 export const generateVoices = internalAction({
   args: {
     words: v.array(v.string()),
@@ -9,7 +11,7 @@ export const generateVoices = internalAction({
   async handler(ctx, args) {
     async function generateVoice(word: string) {
       const voiceUrl = await fetch(
-        "https://api.elevenlabs.io/v1/text-to-speech/TxGEqnHWrfWFTfGW9XjX",
+        `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
         {
           method: "POST",
           headers: {

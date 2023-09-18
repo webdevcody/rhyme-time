@@ -1,5 +1,5 @@
 import type { V2_MetaFunction } from "@remix-run/node";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Spinner } from "~/components/spinner";
 import { useEffect, useState } from "react";
 import type { Id } from "convex/_generated/dataModel";
@@ -8,7 +8,7 @@ import { api } from "convex/_generated/api";
 
 export const meta: V2_MetaFunction = () => {
   return [
-    { title: "New Remix App" },
+    { title: "Rhyme Time" },
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
